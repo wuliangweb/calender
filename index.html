@@ -422,7 +422,6 @@ document.addEventListener('DOMContentLoaded', function(){
      };
     
     Calendar.prototype.drawDays = function(val, rest, work) {
-        console.log("🚀 ~ document.addEventListener ~ val:", val, rest, work)
         // 本月1号是本周的第几天(下标)
         var startDay = new Date(year, month, 1).getDay(),
 //      下面表示这个月总共有几天
