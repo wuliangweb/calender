@@ -252,12 +252,20 @@ tbody td:active {
 </style>
 <body>
   <div style="text-align: center;margin-top: 5em;">
-    <label for="chooseDate">选择日期: </label>
+    <label for="chooseDate">休息第一天: </label>
     <input type="date" style="font-size: 1em;" id="chooseDate">
+  </div>
+  <div style="text-align: center;margin-top: .8em;">
+    <label for="rest">休息天数: </label>
+    <input type="number" style="font-size: 1em;" id="rest">
+  </div>
+  <div style="text-align: center;margin-top: .8em;">
+    <label for="work">上班天数: </label>
+    <input type="number" style="font-size: 1em;" id="work">
   </div>
   <div class="elegant-calencar">
      <p id="reset">reset</p>
-      <div id="header" class="clearfix">
+      <div id="header" class="clearfix"> 
          <div class="pre-button"><</div>
           <div class="head-info">
               <div class="head-day"></div>
@@ -391,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function(){
     Calendar.prototype.draw  = function() {
         this.getCookie('selected_day');
         this.getOptions();
-        this.drawDays();
+        this.drawDays(date, rest, work);
         var that = this,
             reset = document.getElementById('reset'),
             pre = document.getElementsByClassName('pre-button'),
@@ -413,8 +421,8 @@ document.addEventListener('DOMContentLoaded', function(){
             headMonth[0].innerHTML = monthTag[month] +" - " + year;        
      };
     
-    Calendar.prototype.drawDays = function(val) {
-        console.log("🚀 ~ document.addEventListener ~ val:", val)
+    Calendar.prototype.drawDays = function(val, rest, work) {
+        console.log("🚀 ~ document.addEventListener ~ val:", val, rest, work)
         // 本月1号是本周的第几天(下标)
         var startDay = new Date(year, month, 1).getDay(),
 //      下面表示这个月总共有几天
@@ -465,16 +473,24 @@ document.addEventListener('DOMContentLoaded', function(){
               const end = '' + year + calcMonth + calcDay
               const diffDay = moment(end).diff(start, 'day')
               // 休4上8 一个周期就是 12
-              const cycleLength = 12
+              let cycleLength
+              if (rest != null && work != null) {
+                cycleLength = rest + work
+              } else {
+                cycleLength = 12
+              }
               if (diffDay >= 0) {
-                if (diffDay % cycleLength >= 0 && diffDay % cycleLength <= 3) {
+                // 默认是休4,所以是 3
+                const limit = rest != null && work != null ? rest - 1 : 3
+                if (diffDay % cycleLength >= 0 && diffDay % cycleLength <= limit) {
                     days[j].className = 'rowGreen'
                 }
               } else {
                 // 如果日期小于开始日期,差值是负数,计算出他是上一个周期的第几个 从0开始
                 const index = cycleLength - 1 - ((Math.abs(diffDay) - 1) % cycleLength)
-                // 负值的时候比较特殊
-                if (index >= 0 && index <= 3) {
+                // 默认是休4,所以是 3
+                const limit = rest != null && work != null ? rest - 1 : 3
+                if (index >= 0 && index <= limit) {
                     days[j].className = 'rowGreen'
                 }
               }
@@ -503,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function(){
             month = month - 1;
         }
         this.drawHeader(1);
-        this.drawDays();
+        this.drawDays(date, rest, work);
     };
     
     Calendar.prototype.nextMonth = function() {
@@ -514,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function(){
             month = month + 1;
         }
         this.drawHeader(1);
-        this.drawDays();
+        this.drawDays(date, rest, work);
     };
     
     Calendar.prototype.getOptions = function() {
@@ -532,7 +548,7 @@ document.addEventListener('DOMContentLoaded', function(){
          year = today.getFullYear();
          day = today.getDate();
          this.options = undefined;
-         this.drawDays();
+         this.drawDays(date, rest, work);
      };
     
     Calendar.prototype.setCookie = function(name, expiredays){
@@ -563,9 +579,21 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     };
     var calendar = new Calendar();
+    var date,rest,work
     const dateInput = document.body.querySelector('#chooseDate')
     dateInput.addEventListener('change', function (e) {
-        calendar.drawDays(e.target.value)
+        date = e.target.value
+        calendar.drawDays(date, rest, work)
+    })
+    const restInput = document.body.querySelector('#rest')
+    restInput.addEventListener('change', function (e) {
+        rest = Number(e.target.value)
+        calendar.drawDays(date, rest, work)
+    })
+    const workInput = document.body.querySelector('#work')
+    workInput.addEventListener('change', function (e) {
+        work = Number(e.target.value)
+        calendar.drawDays(date, rest, work)
     })
     watchScreen()
 }, false);
